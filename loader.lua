@@ -1,40 +1,27 @@
--- ╔══════════════════════════════════════════╗
--- ║         Key Auth Loader (Potassium)      ║
--- ╚══════════════════════════════════════════╝
+-- Key Auth Loader
+-- Usage:
+--   script_key = "KA-xxxx"
+--   loadstring(game:HttpGet("https://key-lbyl.onrender.com/loader"))()
 
 local API_URL = "https://key-lbyl.onrender.com"
-
--- ── Get HWID ──────────────────────────────────────────────────────────────
-local hwid = getmachineid()
-if not hwid or hwid == "" then
-    error("[Auth] Failed to get HWID. Are you on Potassium?")
-end
-
--- ── Prompt for key ────────────────────────────────────────────────────────
--- You can replace this with a saved key from writefile/readfile
-local key
-
-local keyFile = "auth_key.txt"
-
-if isfile(keyFile) then
-    key = readfile(keyFile):gsub("%s+", "")  -- trim whitespace
-else
-    -- First time: ask user to paste key
-    -- (Use your GUI's input box here instead if you have one)
-    error("[Auth] No key found. Create a file called 'auth_key.txt' in your executor's workspace folder and paste your key in it.")
-end
-
-if not key or key == "" then
-    error("[Auth] Key file is empty.")
-end
-
--- ── Send auth request ─────────────────────────────────────────────────────
 local HttpService = game:GetService("HttpService")
 
-local body = HttpService:JSONEncode({
-    key  = key,
-    hwid = hwid
-})
+-- Read key from global set by user
+local key = (getgenv and getgenv().script_key) or script_key or ""
+key = tostring(key):gsub("%s+", "")
+
+if key == "" or key == "nil" then
+    error("[Auth] Set your key first: script_key = 'KA-...'")
+end
+
+-- Get HWID
+local hwid = getmachineid()
+if not hwid or hwid == "" then
+    error("[Auth] Failed to get HWID.")
+end
+
+-- Auth request
+local body = HttpService:JSONEncode({ key = key, hwid = hwid })
 
 local success, response = pcall(function()
     return request({
@@ -46,33 +33,25 @@ local success, response = pcall(function()
 end)
 
 if not success then
-    error("[Auth] Could not reach auth server. Check your internet or the server may be down.")
+    error("[Auth] Could not reach auth server. Try again.")
 end
 
--- ── Parse response ────────────────────────────────────────────────────────
 local ok, data = pcall(function()
     return HttpService:JSONDecode(response.Body)
 end)
 
 if not ok or not data then
-    error("[Auth] Invalid response from server.")
+    error("[Auth] Invalid server response.")
 end
 
 if not data.success then
-    local err = data.error or "Unknown error"
-    error("[Auth] Authentication failed: " .. err)
+    error("[Auth] " .. (data.error or "Authentication failed"))
 end
 
--- ── Execute protected script ──────────────────────────────────────────────
-local script_src = data.script
-
-if not script_src or script_src == "" then
-    error("[Auth] Server returned empty script.")
-end
-
-local fn, loadErr = loadstring(script_src)
+-- Run protected script
+local fn, err = loadstring(data.script)
 if not fn then
-    error("[Auth] Failed to load script: " .. tostring(loadErr))
+    error("[Auth] Script error: " .. tostring(err))
 end
 
 fn()
