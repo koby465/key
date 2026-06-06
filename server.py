@@ -10,8 +10,8 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-DATABASE_URL = os.environ["DATABASE_URL"]
-INTERNAL_SECRET = os.environ["INTERNAL_SECRET"]  # shared secret between bot and API
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+INTERNAL_SECRET = os.environ.get("INTERNAL_SECRET", "")
 
 
 def get_db():
