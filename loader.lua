@@ -2,7 +2,7 @@
 -- ║         Key Auth Loader (Potassium)      ║
 -- ╚══════════════════════════════════════════╝
 
-local API_URL = "https://YOUR-APP.railway.app"  -- replace with your Railway URL
+local API_URL = "https://key-lbyl.onrender.com"
 
 -- ── Get HWID ──────────────────────────────────────────────────────────────
 local hwid = getmachineid()
