@@ -15,7 +15,7 @@ if key == "" or key == "nil" then
 end
 
 -- Get HWID
-local hwid = getmachineid()
+local hwid = gethwid()
 if not hwid or hwid == "" then
     error("[Auth] Failed to get HWID.")
 end
