@@ -238,14 +238,16 @@ def auth():
 
 @app.route("/loader")
 def loader():
-    """Serves the loader.lua so users can loadstring(HttpGet('/loader'))()"""
+    from flask import Response
+    base = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(base, "loader.lua")
     try:
-        with open("loader.lua", "r") as f:
+        with open(path, "r") as f:
             src = f.read()
-        from flask import Response
         return Response(src, mimetype="text/plain")
-    except FileNotFoundError:
-        return "-- loader not found", 404
+    except Exception as e:
+        return f"-- error: {e}", 404
+
 
 
 if __name__ == "__main__":
