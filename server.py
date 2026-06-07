@@ -236,6 +236,18 @@ def auth():
     return jsonify({"success": True, "script": script})
 
 
+@app.route("/loader")
+def loader():
+    """Serves the loader.lua so users can loadstring(HttpGet('/loader'))()"""
+    try:
+        with open("loader.lua", "r") as f:
+            src = f.read()
+        from flask import Response
+        return Response(src, mimetype="text/plain")
+    except FileNotFoundError:
+        return "-- loader not found", 404
+
+
 if __name__ == "__main__":
     init_db()
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
